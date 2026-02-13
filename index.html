@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Valentine</title>
+
+<style>
+body {
+  height: 100vh;
+  width: 100vw;
+  margin: 0;
+  background: #fce4ec;
+  font-family: Arial, sans-serif;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  transition: background .5s ease;
+}
+
+#ask {
+  font-size: 5vh;
+  color: darkred;
+  margin-bottom: 4vh;
+  text-align: center;
+}
+
+#yes, #no {  
+  font-size: 3vh;  
+  padding: 1vh 3vh;  
+  margin: 1vh;  
+  border: none;  
+  border-radius: 10px;  
+  cursor: pointer;  
+  transition: transform 0.2s ease;
+  position: relative; 
+}  
+  
+#yes {  
+  background: pink;
+  z-index: 2; 
+}  
+  
+#no {  
+  background: lightgray; 
+  z-index: 1; 
+}
+
+#cat {
+  position: absolute;
+  opacity: 0;
+  transform: scale(.2);
+  transition: opacity 1.5s ease, transform 1.5s ease;
+  width: 35vw;
+  height: auto;
+}
+
+#cat.show {
+  opacity: 1;
+  transform: scale(1);
+}
+
+@keyframes bounce {
+  0% { transform: scale(1); }
+  30% { transform: scale(1.1); }
+  60% { transform: scale(.95); }
+  100% { transform: scale(1); }
+}
+
+#cat.bounce {
+  animation: bounce .5s ease;
+}
+
+#flower {
+  position: absolute;
+  width: 28vw;
+  height: auto;
+  display: none;
+  z-index: 3;
+  touch-action: none;
+  opacity: 0;
+  transform: scale(.8);
+  transition: opacity .3s ease, transform .3s ease;
+}
+
+#flower.show {
+  display: block;
+  opacity: 1;
+  transform: scale(1);
+}
+
+#text {
+  position: absolute;
+  bottom: 10%;
+  font-size: 3vh;
+  color: darkred;
+  text-align: center;
+  width: 100%;
+  opacity: 1;
+  transition: opacity .3s ease;
+}
+
+#next {
+  position: absolute;
+  right: 5%;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  color: darkred;
+  border: none;
+  font-size: 6vh;
+  cursor: pointer;
+  display: none;
+}
+</style>
+</head>
+
+<body>
+
+<div id="ask">Would you be my Valentine?</div>
+<button id="yes">Yes</button>
+<button id="no">No</button>
+
+<img id="cat" src="el-gato.png">
+<img id="flower" src="boquet.png">
+<div id="text"></div>
+<button id="next">></button>
+
+<script>
+const ask = document.getElementById("ask")
+const yes = document.getElementById("yes")
+const no = document.getElementById("no")
+const cat = document.getElementById("cat")
+const flower = document.getElementById("flower")
+const text = document.getElementById("text")
+const next = document.getElementById("next")
+const body = document.body
+
+let yesSize = 1
+let noSize = 1
+let drag = false
+let hold = false
+let stage = 0
+let noIndex = 0
+const noTexts = [
+  "Are you sure?",
+  "Really?",
+  "Come on…",
+  "Think again ",
+  "Don't leave me hanging!"
+]
+
+no.onclick = () => {
+  yesSize += 0.45
+  yes.style.transform = "scale(" + yesSize + ")"
+  
+  noIndex = (noIndex + 1) % noTexts.length
+  no.textContent = noTexts[noIndex]
+  noSize -= 0.1
+  if(noSize < 0.2) noSize = 0.2
+  no.style.transform = "scale(" + noSize + ")"
+}
+
+yes.onclick = () => {
+  ask.style.display = "none"
+  yes.style.display = "none"
+  no.style.display = "none"
+  body.style.background = "#f8bbd0"
+  cat.classList.add("show")
+  text.textContent = "Here’s a bouquet for you, take it :)"
+  cat.src = "el-gato-boquet.png"
+  hold = true
+  stage = 1
+}
+
+cat.onclick = () => {
+  if (stage >= 1 && hold && !drag) {
+    cat.src = "el-gato.png"
+    hold = false
+    flower.style.display = "block"
+    flower.classList.add("show")
+    flower.style.left = "50%"
+    flower.style.top = "50%"
+  }
+}
+
+flower.addEventListener("touchstart", () => {
+  drag = true
+  text.style.opacity = "0"
+}, { passive: true })
+
+flower.addEventListener("touchmove", e => {
+  if (drag) {
+    e.preventDefault()
+    const t = e.touches[0]
+    flower.style.left = t.clientX - flower.offsetWidth / 2 + "px"
+    flower.style.top = t.clientY - flower.offsetHeight / 2 + "px"
+  }
+}, { passive: false })
+
+flower.addEventListener("touchend", () => {
+  if (drag) {
+    drag = false
+
+    const r1 = flower.getBoundingClientRect()
+    const r2 = cat.getBoundingClientRect()
+
+    const hit = !(r1.right < r2.left ||
+                  r1.left > r2.right ||
+                  r1.bottom < r2.top ||
+                  r1.top > r2.bottom)
+
+    if (hit) {
+      flower.classList.remove("show")
+      flower.style.display = "none"
+      cat.src = "el-gato-boquet.png"
+      hold = true
+      stage = 2
+
+      text.textContent = "Sure! I can hold it for you "
+      text.style.opacity = "1"
+      next.style.display = "block"
+    }
+  }
+})
+
+next.onclick = () => {
+  if (stage === 2) {
+    text.textContent = "I LOVE YOUU "
+    stage = 3
+  }
+}
+</script>
+
+</body>
+</html>
